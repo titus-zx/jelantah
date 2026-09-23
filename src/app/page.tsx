@@ -1,69 +1,141 @@
-import Image from "next/image";
+import { useRef, useState } from "react";
 
-export default function Home() {
+export default function JelantahForm() {
+  // Controlled state
+  const [nama, setNama] = useState("");
+  const [hp, setHp] = useState("");
+  const [berat, setBerat] = useState("");
+  const [foto, setFoto] = useState<File | null>(null);
+  const [fotoUrl, setFotoUrl] = useState<string>("");
+  const [waktu, setWaktu] = useState<string>("");
+  const [loading, setLoading] = useState(false);
+  const [ok, setOk] = useState(false);
+  const [error, setError] = useState("");
+
+  // Tambah ref camera
+  const fileInput = useRef<HTMLInputElement>(null);
+
+  // Config — ganti URL di sini
+  const APPS_SCRIPT_URL = process.env.NEXT_PUBLIC_APPS_SCRIPT_URL || "";
+
+  // Handler ambil foto
+  function handleChangeFoto(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFoto(file);
+      setFotoUrl(URL.createObjectURL(file));
+    }
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setOk(false);
+    setError("");
+
+    if (!foto) return setError("Foto timbang wajib");
+    if (!berat) return setError("Input jumlah berat");
+
+    // Compose waktu
+    const waktuSetor = new Date().toISOString();
+    setWaktu(waktuSetor);
+
+    // Compose form data
+    const data = new FormData();
+    data.append("nama", nama);
+    data.append("hp", hp);
+    data.append("berat", berat);
+    data.append("waktu", waktuSetor);
+    data.append("foto", foto);
+
+    try {
+      const res = await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        body: data,
+      });
+      if (!res.ok) throw new Error("Gagal submit: " + res.status);
+      setOk(true);
+      setNama(""); setHp(""); setBerat(""); setFoto(null); setFotoUrl("");
+    } catch (e: any) {
+      setError(e?.message || "Error tidak diketahui");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <main className="min-h-screen p-4 flex flex-col items-center justify-center bg-yellow-50">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white shadow rounded-lg p-6 w-full max-w-sm flex flex-col gap-4"
+      >
+        <h1 className="text-xl font-bold text-center text-yellow-700 mb-2">Setoran Jelantah GKJ Pamulang</h1>
+        <label className="block">
+          Nama:
+          <input
+            className="input input-bordered w-full mt-1"
+            value={nama}
+            onChange={e => setNama(e.target.value)}
+            required
+            placeholder="Nama Jemaat"
+            autoComplete="name"
+          />
+        </label>
+        <label className="block">
+          Nomor HP:
+          <input
+            className="input input-bordered w-full mt-1"
+            value={hp}
+            onChange={e => setHp(e.target.value)}
+            required
+            placeholder="Nomor WA"
+            autoComplete="tel"
+            type="tel"
+          />
+        </label>
+        <label className="block">
+          Berat minyak (kg):
+          <input
+            className="input input-bordered w-full mt-1"
+            type="number"
+            value={berat}
+            onChange={e => setBerat(e.target.value)}
+            required
+            step="any"
+            min={0.1}
+            placeholder="0.5"
+          />
+        </label>
+        <label className="block">
+          Foto timbang:
+          <input
+            ref={fileInput}
+            className="file-input file-input-bordered w-full mt-1" 
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={handleChangeFoto}
+            required
+          />
+        </label>
+        {fotoUrl && (
+          <div className="flex items-center justify-center">
+            <img src={fotoUrl} alt="Preview" width={180} className="rounded border my-2" />
+          </div>
+        )}
+        <button
+          type="submit"
+          className="btn btn-primary w-full disabled:opacity-60"
+          disabled={loading}
+        >
+          {loading ? "Menyimpan..." : "Kirim Setoran"}
+        </button>
+        {ok && <p className="text-green-600 text-center">Tersimpan, terima kasih!</p>}
+        {error && <p className="text-red-700 text-center">{error}</p>}
+      </form>
+      <p className="text-xs text-gray-400 mt-3 mb-1">Copyright &copy; GKJ Pamulang</p>
+      <p className="text-xs text-gray-500">Powered by Google Apps Script + Google Sheet</p>
+      <p className="text-xs text-gray-400">Edit <code>.env.local</code> → <b>NEXT_PUBLIC_APPS_SCRIPT_URL</b></p>
+    </main>
   );
 }
