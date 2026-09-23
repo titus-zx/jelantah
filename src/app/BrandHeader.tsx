@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { BRAND_LOGO, BRAND_NAME, BRAND_TAGLINE } from "@/src/brand";
+import { BRAND_LOGO, BRAND_NAME, BRAND_TAGLINE } from "@/brand";
 
 export default function BrandHeader() {
   return (
