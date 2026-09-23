@@ -1,3 +1,4 @@
+"use client";
 import { useRef, useState } from "react";
 
 export default function JelantahForm() {
@@ -12,13 +13,11 @@ export default function JelantahForm() {
   const [ok, setOk] = useState(false);
   const [error, setError] = useState("");
 
-  // Tambah ref camera
   const fileInput = useRef<HTMLInputElement>(null);
 
   // Config — ganti URL di sini
   const APPS_SCRIPT_URL = process.env.NEXT_PUBLIC_APPS_SCRIPT_URL || "";
 
-  // Handler ambil foto
   function handleChangeFoto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (file) {
@@ -36,11 +35,9 @@ export default function JelantahForm() {
     if (!foto) return setError("Foto timbang wajib");
     if (!berat) return setError("Input jumlah berat");
 
-    // Compose waktu
     const waktuSetor = new Date().toISOString();
     setWaktu(waktuSetor);
 
-    // Compose form data
     const data = new FormData();
     data.append("nama", nama);
     data.append("hp", hp);
